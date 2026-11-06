@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shadonami Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F1F5F3;--surface:#FFFFFF;--ink:#10302F;--muted:#5B7270;--line:#D5E0DC;--spend:#B4432F;--save:#1F7A4D;--accent:#E8A317;--on-accent:#10302F;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D1B1A;--surface:#152928;--ink:#E6F0ED;--muted:#8FA9A5;--line:#264240;--spend:#F0866F;--save:#5CCB91;--accent:#F0B63A;--on-accent:#0D1B1A}}
+:root[data-theme="dark"]{--bg:#0D1B1A;--surface:#152928;--ink:#E6F0ED;--muted:#8FA9A5;--line:#264240;--spend:#F0866F;--save:#5CCB91;--accent:#F0B63A;--on-accent:#0D1B1A}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.45}
+main{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;font-weight:800;margin:0}
+.sub{color:var(--muted);margin:2px 0 18px;font-size:.95rem}
+.tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:18px}
+.tabs button{flex:1;border:0;background:none;color:var(--muted);font:inherit;font-weight:600;padding:10px;border-radius:9px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.big{background:var(--ink);color:var(--bg);border-radius:16px;padding:20px;margin-bottom:14px}
+.big .lbl{opacity:.75;font-size:.9rem}
+.big .num{font-size:2.4rem;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-top:4px;overflow-wrap:anywhere}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat .lbl{color:var(--muted);font-size:.85rem}.stat .v{font-weight:800;font-size:1.15rem;overflow-wrap:anywhere}
+section.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+h2{font-size:1.05rem;margin:0 0 12px}
+form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+form .full{grid-column:1/-1}
+label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:3px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:8px;padding:11px 14px;cursor:pointer;background:var(--accent);color:var(--on-accent)}
+.btn.alt{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .t{font-weight:600;overflow-wrap:anywhere}.row .m{color:var(--muted);font-size:.85rem}
+.amt{font-weight:800;white-space:nowrap}.amt.out{color:var(--spend)}.amt.in{color:var(--save)}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:4px 8px}
+.bar{display:grid;grid-template-columns:110px 1fr auto;gap:10px;align-items:center;margin:8px 0;font-size:.9rem}
+.bar .track{height:10px;background:var(--bg);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--spend);border-radius:6px}
+.prog{height:14px;background:var(--bg);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:8px 0 4px}
+.prog div{height:100%;background:var(--save)}
+.empty{color:var(--muted);padding:8px 0}
+.seg{display:flex;gap:8px;grid-column:1/-1}
+.seg label{flex:1;display:flex;align-items:center;gap:6px;color:var(--ink);font-size:.95rem;margin:0}
+.seg input{width:auto}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <h1>Shadonami Cyber Space</h1>
+  <p class="sub">Business expenses and personal savings, in naira.</p>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="t-exp" aria-selected="true">Expenses</button>
+    <button role="tab" id="t-sav" aria-selected="false">Savings</button>
+  </div>
+
+  <div id="p-exp">
+    <div class="big"><div class="lbl" id="monthLbl">Spent this month</div><div class="num" id="monthTotal">₦0</div></div>
+    <div class="stats">
+      <div class="stat"><div class="lbl">All time</div><div class="v" id="allTotal">₦0</div></div>
+      <div class="stat"><div class="lbl">Entries this month</div><div class="v" id="monthCount">0</div></div>
+    </div>
+    <section class="box">
+      <h2>Add an expense</h2>
+      <form id="expForm">
+        <div class="full"><label for="eDesc">What was it for?</label><input id="eDesc" required maxlength="80" placeholder="e.g. A3 printing paper"></div>
+        <div><label for="eAmt">Amount (₦)</label><input id="eAmt" type="number" min="1" step="any" inputmode="decimal" required></div>
+        <div><label for="eDate">Date</label><input id="eDate" type="date" required></div>
+        <div class="full"><label for="eCat">Category</label>
+          <select id="eCat"><option>Rent and utilities</option><option>Data and internet</option><option>Power and fuel</option><option>Equipment and repairs</option><option>Supplies and printing</option><option>Software and subscriptions</option><option>Transport</option><option>Marketing</option><option>Staff and labour</option><option>Other</option></select></div>
+        <div class="full"><button class="btn" type="submit">Save expense</button></div>
+      </form>
+    </section>
+    <section class="box"><h2>This month by category</h2><div id="cats"></div></section>
+    <section class="box"><h2>Recent expenses</h2><div id="expList"></div></section>
+  </div>
+
+  <div id="p-sav" hidden>
+    <div class="big"><div class="lbl">Saved so far</div><div class="num" id="balance">₦0</div></div>
+    <section class="box">
+      <h2>Savings goal</h2>
+      <div id="goalView"></div>
+      <form id="goalForm" style="margin-top:10px">
+        <div><label for="gName">Goal</label><input id="gName" maxlength="60" placeholder="e.g. New laptop"></div>
+        <div><label for="gAmt">Target (₦)</label><input id="gAmt" type="number" min="0" step="any" inputmode="decimal"></div>
+        <div class="full"><button class="btn alt" type="submit">Update goal</button></div>
+      </form>
+    </section>
+    <section class="box">
+      <h2>Add or take out money</h2>
+      <form id="savForm">
+        <div class="seg">
+          <label><input type="radio" name="kind" value="in" checked> Put in</label>
+          <label><input type="radio" name="kind" value="out"> Take out</label>
+        </div>
+        <div><label for="sAmt">Amount (₦)</label><input id="sAmt" type="number" min="1" step="any" inputmode="decimal" required></div>
+        <div><label for="sDate">Date</label><input id="sDate" type="date" required></div>
+        <div class="full"><label for="sNote">Note (optional)</label><input id="sNote" maxlength="80" placeholder="e.g. Payment from client"></div>
+        <div class="full"><button class="btn" type="submit">Save entry</button></div>
+      </form>
+    </section>
+    <section class="box"><h2>History</h2><div id="savList"></div></section>
+  </div>
+</main>
+
+<script>
+(function(){
+  var KEY="shadonami-tracker-v1", S={exp:[],sav:[],goal:{name:"",target:0}};
+  try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&p.exp&&p.sav){S=p;S.goal=S.goal||{name:"",target:0}}}}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+  var $=function(id){return document.getElementById(id)};
+  var nf=new Intl.NumberFormat("en-NG",{maximumFractionDigits:2});
+  function naira(n){return "₦"+nf.format(n)}
+  function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  function fdate(s){var d=new Date(s+"T00:00:00");return d.toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"})}
+  function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+  $("eDate").value=today();$("sDate").value=today();
+
+  function showTab(w){
+    var e=w==="exp";
+    $("p-exp").hidden=!e;$("p-sav").hidden=e;
+    $("t-exp").setAttribute("aria-selected",e);$("t-sav").setAttribute("aria-selected",!e);
+    try{if(history.replaceState)location.hash=w}catch(x){}
+  }
+  $("t-exp").onclick=function(){showTab("exp")};
+  $("t-sav").onclick=function(){showTab("sav")};
+  if(location.hash==="#sav")showTab("sav");
+
+  function render(){
+    var ym=today().slice(0,7), mo=S.exp.filter(function(x){return x.date.slice(0,7)===ym});
+    var mt=mo.reduce(function(a,x){return a+x.amt},0), at=S.exp.reduce(function(a,x){return a+x.amt},0);
+    $("monthLbl").textContent="Spent in "+new Date().toLocaleDateString("en-NG",{month:"long",year:"numeric"});
+    $("monthTotal").textContent=naira(mt);$("allTotal").textContent=naira(at);$("monthCount").textContent=mo.length;
+
+    var by={};mo.forEach(function(x){by[x.cat]=(by[x.cat]||0)+x.amt});
+    var keys=Object.keys(by).sort(function(a,b){return by[b]-by[a]});
+    $("cats").innerHTML=keys.length?keys.map(function(k){
+      return '<div class="bar"><span>'+esc(k)+'</span><span class="track"><span class="fill" style="display:block;width:'+Math.max(3,by[k]/mt*100)+'%"></span></span><span class="amt">'+naira(by[k])+'</span></div>'}).join(""):'<div class="empty">No expenses this month yet. Add one above.</div>';
+
+    var el=S.exp.slice().sort(function(a,b){return b.date.localeCompare(a.date)||b.id.localeCompare(a.id)}).slice(0,40);
+    $("expList").innerHTML=el.length?el.map(function(x){
+      return '<div class="row"><div><div class="t">'+esc(x.desc)+'</div><div class="m">'+esc(x.cat)+' · '+fdate(x.date)+'</div></div><div><span class="amt out">'+naira(x.amt)+'</span><button class="x" data-e="'+x.id+'" aria-label="Delete '+esc(x.desc)+'">×</button></div></div>'}).join(""):'<div class="empty">Nothing recorded yet.</div>';
+
+    var bal=S.sav.reduce(function(a,x){return a+(x.kind==="in"?x.amt:-x.amt)},0);
+    $("balance").textContent=naira(bal);
+    var g=S.goal;
+    if(g.target>0){
+      var pct=Math.max(0,Math.min(100,bal/g.target*100)), left=g.target-bal;
+      $("goalView").innerHTML='<div><strong>'+esc(g.name||"Savings goal")+'</strong> · target '+naira(g.target)+'</div><div class="prog"><div style="width:'+pct+'%"></div></div><div class="m" style="color:var(--muted)">'+(left>0?naira(left)+" to go ("+Math.round(pct)+"% saved)":"Goal reached.")+'</div>';
+    } else $("goalView").innerHTML='<div class="empty">No goal set. Add a name and target below.</div>';
+    $("gName").value=g.name||"";$("gAmt").value=g.target||"";
+
+    var sl=S.sav.slice().sort(function(a,b){return b.date.localeCompare(a.date)||b.id.localeCompare(a.id)}).slice(0,40);
+    $("savList").innerHTML=sl.length?sl.map(function(x){
+      var inn=x.kind==="in";
+      return '<div class="row"><div><div class="t">'+esc(x.note||(inn?"Money put in":"Money taken out"))+'</div><div class="m">'+fdate(x.date)+'</div></div><div><span class="amt '+(inn?"in":"out")+'">'+(inn?"+":"−")+naira(x.amt)+'</span><button class="x" data-s="'+x.id+'" aria-label="Delete entry">×</button></div></div>'}).join(""):'<div class="empty">No savings entries yet.</div>';
+  }
+
+  $("expForm").onsubmit=function(e){e.preventDefault();
+    var a=parseFloat($("eAmt").value);if(!(a>0))return;
+    S.exp.push({id:id(),desc:$("eDesc").value.trim(),amt:a,date:$("eDate").value,cat:$("eCat").value});
+    save();$("eDesc").value="";$("eAmt").value="";render();$("eDesc").focus()};
+  $("savForm").onsubmit=function(e){e.preventDefault();
+    var a=parseFloat($("sAmt").value);if(!(a>0))return;
+    var kind=document.querySelector('input[name="kind"]:checked').value;
+    S.sav.push({id:id(),kind:kind,amt:a,date:$("sDate").value,note:$("sNote").value.trim()});
+    save();$("sAmt").value="";$("sNote").value="";render()};
+  $("goalForm").onsubmit=function(e){e.preventDefault();
+    S.goal={name:$("gName").value.trim(),target:parseFloat($("gAmt").value)||0};save();render()};
+  document.addEventListener("click",function(e){
+    var t=e.target;
+    if(t.dataset&&t.dataset.e){S.exp=S.exp.filter(function(x){return x.id!==t.dataset.e});save();render()}
+    if(t.dataset&&t.dataset.s){S.sav=S.sav.filter(function(x){return x.id!==t.dataset.s});save();render()}
+  });
+  render();
+})();
+</script>
+</body>
+</html>
